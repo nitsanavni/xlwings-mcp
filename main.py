@@ -338,15 +338,28 @@ def write_range(sheet_name: str, start_cell: str, values: list[list[str]]) -> st
 
 
 @mcp.tool()
-def open_excel_file(file_path: str) -> str:
+def open_excel_file(file_path: str, create_if_not_exists: bool = True) -> str:
     """Open an Excel file in a new workbook.
 
     Args:
         file_path: Path to the Excel file to open
+        create_if_not_exists: If True, create the file if it doesn't exist
     """
     try:
-        wb = xw.Book(file_path)
-        return f"Opened workbook: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
+        path = Path(file_path)
+
+        if not path.exists() and create_if_not_exists:
+            # Create a new workbook and save it
+            # Ensure the directory exists
+            path.parent.mkdir(parents=True, exist_ok=True)
+            wb = xw.Book()
+            wb.save(path)
+            return f"Created and opened new workbook: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
+        elif not path.exists() and not create_if_not_exists:
+            return f"Error: File {file_path} does not exist and create_if_not_exists is False"
+        else:
+            wb = xw.Book(file_path)
+            return f"Opened workbook: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
     except Exception as e:
         return f"Error opening file: {e}"
 
