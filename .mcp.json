@@ -3,10 +3,7 @@
     "excel-api": {
       "type": "stdio",
       "command": "uv",
-      "args": [
-        "run",
-        "main.py"
-      ],
+      "args": ["run", "main.py"],
       "env": {}
     }
   }

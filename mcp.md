@@ -14,6 +14,7 @@
 </div>
 
 <!-- omit in toc -->
+
 ## Table of Contents
 
 - [MCP Python SDK](#mcp-python-sdk)
@@ -73,22 +74,23 @@ The Model Context Protocol allows applications to provide context for LLMs in a 
 
 ### Adding MCP to your python project
 
-We recommend using [uv](https://docs.astral.sh/uv/) to manage your Python projects. 
+We recommend using [uv](https://docs.astral.sh/uv/) to manage your Python projects.
 
 If you haven't created a uv-managed project yet, create one:
 
-   ```bash
-   uv init mcp-server-demo
-   cd mcp-server-demo
-   ```
+```bash
+uv init mcp-server-demo
+cd mcp-server-demo
+```
 
-   Then add MCP to your project dependencies:
+Then add MCP to your project dependencies:
 
-   ```bash
-   uv add "mcp[cli]"
-   ```
+```bash
+uv add "mcp[cli]"
+```
 
 Alternatively, for projects using pip for dependencies:
+
 ```bash
 pip install "mcp[cli]"
 ```
@@ -128,11 +130,13 @@ def get_greeting(name: str) -> str:
 ```
 
 You can install this server in [Claude Desktop](https://claude.ai/download) and interact with it right away by running:
+
 ```bash
 mcp install server.py
 ```
 
 Alternatively, you can test it with the MCP Inspector:
+
 ```bash
 mcp dev server.py
 ```
@@ -381,6 +385,7 @@ if __name__ == "__main__":
 ```
 
 Run it with:
+
 ```bash
 python server.py
 # or
@@ -458,17 +463,16 @@ app.mount("/math", math.mcp.streamable_http_app())
 ```
 
 For low level server with Streamable HTTP implementations, see:
+
 - Stateful server: [`examples/servers/simple-streamablehttp/`](examples/servers/simple-streamablehttp/)
 - Stateless server: [`examples/servers/simple-streamablehttp-stateless/`](examples/servers/simple-streamablehttp-stateless/)
 
-
-
 The streamable HTTP transport supports:
+
 - Stateful and stateless operation modes
 - Resumability with event stores
-- JSON or SSE response formats  
+- JSON or SSE response formats
 - Better scalability for multi-node deployments
-
 
 ### Mounting to an Existing ASGI Server
 
@@ -637,6 +641,7 @@ async def query_db(name: str, arguments: dict) -> list:
 ```
 
 The lifespan API provides:
+
 - A way to initialize resources when the server starts and clean them up when it stops
 - Access to initialized resources through the request context in handlers
 - Type-safe context passing between lifespan and request handlers
@@ -849,28 +854,27 @@ async def main():
 
 For a complete working example, see [`examples/clients/simple-auth-client/`](examples/clients/simple-auth-client/).
 
-
 ### MCP Primitives
 
 The MCP protocol defines three core primitives that servers can implement:
 
-| Primitive | Control               | Description                                         | Example Use                  |
-|-----------|-----------------------|-----------------------------------------------------|------------------------------|
-| Prompts   | User-controlled       | Interactive templates invoked by user choice        | Slash commands, menu options |
-| Resources | Application-controlled| Contextual data managed by the client application   | File contents, API responses |
-| Tools     | Model-controlled      | Functions exposed to the LLM to take actions        | API calls, data updates      |
+| Primitive | Control                | Description                                       | Example Use                  |
+| --------- | ---------------------- | ------------------------------------------------- | ---------------------------- |
+| Prompts   | User-controlled        | Interactive templates invoked by user choice      | Slash commands, menu options |
+| Resources | Application-controlled | Contextual data managed by the client application | File contents, API responses |
+| Tools     | Model-controlled       | Functions exposed to the LLM to take actions      | API calls, data updates      |
 
 ### Server Capabilities
 
 MCP servers declare capabilities during initialization:
 
-| Capability  | Feature Flag                 | Description                        |
-|-------------|------------------------------|------------------------------------|
-| `prompts`   | `listChanged`                | Prompt template management         |
-| `resources` | `subscribe`<br/>`listChanged`| Resource exposure and updates      |
-| `tools`     | `listChanged`                | Tool discovery and execution       |
-| `logging`   | -                            | Server logging configuration       |
-| `completion`| -                            | Argument completion suggestions    |
+| Capability   | Feature Flag                  | Description                     |
+| ------------ | ----------------------------- | ------------------------------- |
+| `prompts`    | `listChanged`                 | Prompt template management      |
+| `resources`  | `subscribe`<br/>`listChanged` | Resource exposure and updates   |
+| `tools`      | `listChanged`                 | Tool discovery and execution    |
+| `logging`    | -                             | Server logging configuration    |
+| `completion` | -                             | Argument completion suggestions |
 
 ## Documentation
 

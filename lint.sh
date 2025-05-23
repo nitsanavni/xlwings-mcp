@@ -8,3 +8,6 @@ uv run ruff check --fix .
 
 # Type check with mypy
 uv run mypy .
+
+# Format with prettier
+bunx prettier --write .
