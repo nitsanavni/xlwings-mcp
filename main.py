@@ -85,8 +85,8 @@ def read_expanded_range_table(
     sheet_name: str,
     start_cell: str,
     headers: bool = True,
-    show_row_numbers: bool = False,
-    show_col_addresses: bool = False,
+    show_row_numbers: bool = True,
+    show_col_addresses: bool = True,
     tablefmt: str = "plain",
 ) -> str:
     """Read a dynamic range starting from a cell and format as a table.
@@ -173,8 +173,8 @@ def read_range_table(
     sheet_name: str,
     range_address: str,
     headers: bool = True,
-    show_row_numbers: bool = False,
-    show_col_addresses: bool = False,
+    show_row_numbers: bool = True,
+    show_col_addresses: bool = True,
     tablefmt: str = "plain",
 ) -> str:
     """Read a range of cells from Excel and format as a table.
