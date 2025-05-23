@@ -1,13 +1,17 @@
 #!/bin/bash
 
-# Format code with black
-uv run black .
+# Get git tracked files
+FILES=$(git ls-files)
+PYFILES=$(echo "$FILES" | grep '\.py$')
 
-# Fix linting issues with ruff
-uv run ruff check --fix .
+# Format code with black (only git tracked Python files)
+echo "$PYFILES" | xargs -r uv run black
 
-# Type check with mypy
-uv run mypy .
+# Fix linting issues with ruff (only git tracked Python files)
+echo "$PYFILES" | xargs -r uv run ruff check --fix
 
-# Format with prettier
-bunx prettier --write .
+# Type check with mypy (only git tracked Python files)
+echo "$PYFILES" | xargs -r uv run mypy
+
+# Format with prettier (only git tracked files)
+echo "$FILES" | grep -E '\.(js|ts|json|md|yml|yaml)$' | xargs -r bunx prettier --write
