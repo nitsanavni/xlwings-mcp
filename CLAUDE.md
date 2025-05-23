@@ -8,3 +8,4 @@ Meta learn - when we discover a new way of working, a workflow, a tool to use, l
 - prefer `uv run` over running python directly
 - `./lint.sh` runs the linter, do it often please
 - we're using our own MCP server (excel-api) that runs via `uv run main.py` as configured in .mcp.json
+- run tests with `uv run pytest` from root directory, avoid using `cd`
