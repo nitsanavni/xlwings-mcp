@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "excel-api": {
+    "xlwings": {
       "type": "stdio",
       "command": "uv",
       "args": ["run", "main.py"],
