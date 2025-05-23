@@ -1,17 +1,19 @@
-import xlwings as xw
+import xlwings as xw  # type: ignore
+
 
 def get_sheet_names():
     """Get all sheet names from the active Excel workbook."""
     # Connect to the active Excel application
     app = xw.apps.active
-    
+
     # Get the active workbook
     wb = app.books.active
-    
+
     # Get all sheet names
     sheet_names = [sheet.name for sheet in wb.sheets]
-    
+
     return sheet_names
+
 
 if __name__ == "__main__":
     try:

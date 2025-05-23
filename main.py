@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-import xlwings as xw
+import xlwings as xw  # type: ignore
 from tabulate import tabulate
 from pathlib import Path
 
@@ -18,7 +18,7 @@ def get_sheet_names() -> list[str]:
 @mcp.tool()
 def read_cell(sheet_name: str, cell_address: str) -> str:
     """Read a single cell value from Excel.
-    
+
     Args:
         sheet_name: Name of the sheet
         cell_address: Cell address like 'A1', 'B5', etc.
@@ -33,7 +33,7 @@ def read_cell(sheet_name: str, cell_address: str) -> str:
 @mcp.tool()
 def read_range(sheet_name: str, range_address: str) -> list[list]:
     """Read a range of cells from Excel.
-    
+
     Args:
         sheet_name: Name of the sheet
         range_address: Range address like 'A1:C3', 'B2:D10', etc.
@@ -42,15 +42,15 @@ def read_range(sheet_name: str, range_address: str) -> list[list]:
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
     values = sheet.range(range_address).value
-    
+
     # Handle single cell case
     if not isinstance(values, list):
         return [[str(values) if values is not None else ""]]
-    
+
     # Handle single row case
     if not isinstance(values[0], list):
         return [[str(v) if v is not None else "" for v in values]]
-    
+
     # Handle multi-row case
     return [[str(cell) if cell is not None else "" for cell in row] for row in values]
 
@@ -58,7 +58,7 @@ def read_range(sheet_name: str, range_address: str) -> list[list]:
 @mcp.tool()
 def read_expanded_range(sheet_name: str, start_cell: str) -> list[list]:
     """Read a dynamic range starting from a cell, expanding to find the full data region.
-    
+
     Args:
         sheet_name: Name of the sheet
         start_cell: Starting cell address like 'A1', 'B5', etc.
@@ -67,23 +67,30 @@ def read_expanded_range(sheet_name: str, start_cell: str) -> list[list]:
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
     values = sheet.range(start_cell).expand().value
-    
+
     # Handle single cell case
     if not isinstance(values, list):
         return [[str(values) if values is not None else ""]]
-    
+
     # Handle single row case
     if not isinstance(values[0], list):
         return [[str(v) if v is not None else "" for v in values]]
-    
+
     # Handle multi-row case
     return [[str(cell) if cell is not None else "" for cell in row] for row in values]
 
 
 @mcp.tool()
-def read_expanded_range_table(sheet_name: str, start_cell: str, headers: bool = True, show_row_numbers: bool = False, show_col_addresses: bool = False, tablefmt: str = "plain") -> str:
+def read_expanded_range_table(
+    sheet_name: str,
+    start_cell: str,
+    headers: bool = True,
+    show_row_numbers: bool = False,
+    show_col_addresses: bool = False,
+    tablefmt: str = "plain",
+) -> str:
     """Read a dynamic range starting from a cell and format as a table.
-    
+
     Args:
         sheet_name: Name of the sheet
         start_cell: Starting cell address like 'A1', 'B5', etc.
@@ -96,47 +103,51 @@ def read_expanded_range_table(sheet_name: str, start_cell: str, headers: bool = 
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
     values = sheet.range(start_cell).expand().value
-    
+
     # Parse start cell to get position
-    col_letters = ''.join(c for c in start_cell if c.isalpha())
-    row_num = int(''.join(c for c in start_cell if c.isdigit()))
-    
+    col_letters = "".join(c for c in start_cell if c.isalpha())
+    row_num = int("".join(c for c in start_cell if c.isdigit()))
+
     # Handle single cell case
     if not isinstance(values, list):
         return str(values) if values is not None else ""
-    
+
     # Handle single row case
     if not isinstance(values[0], list):
         values = [values]
-    
+
     # Convert None values to empty strings
-    clean_values = [[str(cell) if cell is not None else "" for cell in row] for row in values]
-    
+    clean_values = [
+        [str(cell) if cell is not None else "" for cell in row] for row in values
+    ]
+
     # Add row numbers if requested
     if show_row_numbers:
         for i, row in enumerate(clean_values):
             row.insert(0, str(row_num + i))
-    
+
     # Generate column headers if requested
     if show_col_addresses:
-        start_col = ord(col_letters[0]) - ord('A')
+        start_col = ord(col_letters[0]) - ord("A")
         col_headers = []
         if show_row_numbers:
-            col_headers.append('Row')
+            col_headers.append("Row")
         for i in range(len(clean_values[0]) - (1 if show_row_numbers else 0)):
-            col_headers.append(chr(ord('A') + start_col + i))
-        
+            col_headers.append(chr(ord("A") + start_col + i))
+
         if headers and clean_values:
             return tabulate(clean_values[1:], headers=col_headers, tablefmt=tablefmt)
         else:
             return tabulate(clean_values, headers=col_headers, tablefmt=tablefmt)
-    
+
     elif headers and clean_values:
         if show_row_numbers:
-            row_headers = ['Row'] + clean_values[0][1:]
+            row_headers = ["Row"] + clean_values[0][1:]
             return tabulate(clean_values[1:], headers=row_headers, tablefmt=tablefmt)
         else:
-            return tabulate(clean_values[1:], headers=clean_values[0], tablefmt=tablefmt)
+            return tabulate(
+                clean_values[1:], headers=clean_values[0], tablefmt=tablefmt
+            )
     else:
         return tabulate(clean_values, tablefmt=tablefmt)
 
@@ -144,7 +155,7 @@ def read_expanded_range_table(sheet_name: str, start_cell: str, headers: bool = 
 @mcp.tool()
 def write_cell(sheet_name: str, cell_address: str, value: str) -> str:
     """Write a value to a single cell in Excel.
-    
+
     Args:
         sheet_name: Name of the sheet
         cell_address: Cell address like 'A1', 'B5', etc.
@@ -158,9 +169,16 @@ def write_cell(sheet_name: str, cell_address: str, value: str) -> str:
 
 
 @mcp.tool()
-def read_range_table(sheet_name: str, range_address: str, headers: bool = True, show_row_numbers: bool = False, show_col_addresses: bool = False, tablefmt: str = "plain") -> str:
+def read_range_table(
+    sheet_name: str,
+    range_address: str,
+    headers: bool = True,
+    show_row_numbers: bool = False,
+    show_col_addresses: bool = False,
+    tablefmt: str = "plain",
+) -> str:
     """Read a range of cells from Excel and format as a table.
-    
+
     Args:
         sheet_name: Name of the sheet
         range_address: Range address like 'A1:C10', 'B2:D20', etc.
@@ -173,49 +191,53 @@ def read_range_table(sheet_name: str, range_address: str, headers: bool = True, 
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
     values = sheet.range(range_address).value
-    
+
     # Parse range to get start position
-    start_cell = range_address.split(':')[0]
-    col_letters = ''.join(c for c in start_cell if c.isalpha())
-    row_num = int(''.join(c for c in start_cell if c.isdigit()))
-    
+    start_cell = range_address.split(":")[0]
+    col_letters = "".join(c for c in start_cell if c.isalpha())
+    row_num = int("".join(c for c in start_cell if c.isdigit()))
+
     # Handle single cell case
     if not isinstance(values, list):
         return str(values) if values is not None else ""
-    
+
     # Handle single row case
     if not isinstance(values[0], list):
         values = [values]
-    
+
     # Convert None values to empty strings
-    clean_values = [[str(cell) if cell is not None else "" for cell in row] for row in values]
-    
+    clean_values = [
+        [str(cell) if cell is not None else "" for cell in row] for row in values
+    ]
+
     # Add row numbers if requested
     if show_row_numbers:
         for i, row in enumerate(clean_values):
             row.insert(0, str(row_num + i))
-    
+
     # Generate column headers if requested
     if show_col_addresses:
-        start_col = ord(col_letters[0]) - ord('A')
+        start_col = ord(col_letters[0]) - ord("A")
         col_headers = []
         if show_row_numbers:
-            col_headers.append('Row')
+            col_headers.append("Row")
         for i in range(len(clean_values[0]) - (1 if show_row_numbers else 0)):
-            col_headers.append(chr(ord('A') + start_col + i))
-        
+            col_headers.append(chr(ord("A") + start_col + i))
+
         if headers and clean_values:
             return tabulate(clean_values[1:], headers=col_headers, tablefmt=tablefmt)
         else:
             return tabulate(clean_values, headers=col_headers, tablefmt=tablefmt)
-    
+
     elif headers and clean_values:
         if show_row_numbers:
             # Adjust headers to include row number column
-            row_headers = ['Row'] + clean_values[0][1:]
+            row_headers = ["Row"] + clean_values[0][1:]
             return tabulate(clean_values[1:], headers=row_headers, tablefmt=tablefmt)
         else:
-            return tabulate(clean_values[1:], headers=clean_values[0], tablefmt=tablefmt)
+            return tabulate(
+                clean_values[1:], headers=clean_values[0], tablefmt=tablefmt
+            )
     else:
         return tabulate(clean_values, tablefmt=tablefmt)
 
@@ -223,7 +245,7 @@ def read_range_table(sheet_name: str, range_address: str, headers: bool = True, 
 @mcp.tool()
 def write_range(sheet_name: str, start_cell: str, values: list[list[str]]) -> str:
     """Write values to a range of cells in Excel.
-    
+
     Args:
         sheet_name: Name of the sheet
         start_cell: Starting cell address like 'A1', 'B5', etc.
@@ -241,7 +263,7 @@ def write_range(sheet_name: str, start_cell: str, values: list[list[str]]) -> st
 @mcp.tool()
 def open_excel_file(file_path: str) -> str:
     """Open an Excel file in a new workbook.
-    
+
     Args:
         file_path: Path to the Excel file to open
     """
@@ -280,10 +302,10 @@ def find_excel_files_in_downloads() -> list[str]:
     """Find all Excel files in the Downloads folder, sorted by modification time."""
     downloads_path = Path.home() / "Downloads"
     excel_files = list(downloads_path.glob("**/*.xlsx"))
-    
+
     if not excel_files:
         return ["No Excel files found in Downloads folder"]
-    
+
     # Sort by modification time, most recent first
     sorted_files = sorted(excel_files, key=lambda x: x.stat().st_mtime, reverse=True)
     return [str(file_path) for file_path in sorted_files[:20]]  # Return top 20
@@ -294,13 +316,13 @@ def open_recent_excel_file() -> str:
     """Open the most recently modified Excel file from Downloads folder."""
     downloads_path = Path.home() / "Downloads"
     excel_files = list(downloads_path.glob("**/*.xlsx"))
-    
+
     if not excel_files:
         return "No Excel files found in Downloads folder"
-    
+
     # Sort by modification time, most recent first
     most_recent = max(excel_files, key=lambda x: x.stat().st_mtime)
-    
+
     try:
         wb = xw.Book(str(most_recent))
         return f"Opened most recent file: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
