@@ -3,7 +3,12 @@
     "xlwings": {
       "type": "stdio",
       "command": "uv",
-      "args": ["run", "main.py"],
+      "args": [
+        "--directory",
+        "/Users/nitsanavni/code/excel-mcp/",
+        "run",
+        "main.py"
+      ],
       "env": {}
     }
   }
