@@ -388,6 +388,18 @@ def list_open_workbooks() -> list[str]:
 
 
 @mcp.tool()
+def save_active_workbook() -> str:
+    """Save the currently active Excel workbook."""
+    try:
+        app = xw.apps.active
+        wb = app.books.active
+        wb.save()
+        return f"Saved workbook: {wb.name}"
+    except Exception as e:
+        return f"Error saving workbook: {e}"
+
+
+@mcp.tool()
 def find_excel_files_in_downloads() -> list[str]:
     """Find all Excel files in the Downloads folder, sorted by modification time."""
     downloads_path = Path.home() / "Downloads"
