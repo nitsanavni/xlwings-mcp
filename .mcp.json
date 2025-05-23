@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "excel-api": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "main.py"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,1 @@
+- prefer uv run over running python directly

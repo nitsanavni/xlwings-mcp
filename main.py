@@ -1,0 +1,155 @@
+from mcp.server.fastmcp import FastMCP
+import xlwings as xw
+from tabulate import tabulate
+
+# Create an MCP server
+mcp = FastMCP("Excel API")
+
+
+@mcp.tool()
+def get_sheet_names() -> list[str]:
+    """Get all sheet names from the active Excel workbook."""
+    app = xw.apps.active
+    wb = app.books.active
+    return [sheet.name for sheet in wb.sheets]
+
+
+@mcp.tool()
+def read_cell(sheet_name: str, cell_address: str) -> str:
+    """Read a single cell value from Excel.
+    
+    Args:
+        sheet_name: Name of the sheet
+        cell_address: Cell address like 'A1', 'B5', etc.
+    """
+    app = xw.apps.active
+    wb = app.books.active
+    sheet = wb.sheets[sheet_name]
+    value = sheet.range(cell_address).value
+    return str(value) if value is not None else ""
+
+
+@mcp.tool()
+def read_range(sheet_name: str, range_address: str) -> list[list]:
+    """Read a range of cells from Excel.
+    
+    Args:
+        sheet_name: Name of the sheet
+        range_address: Range address like 'A1:C3', 'B2:D10', etc.
+    """
+    app = xw.apps.active
+    wb = app.books.active
+    sheet = wb.sheets[sheet_name]
+    values = sheet.range(range_address).value
+    
+    # Handle single cell case
+    if not isinstance(values, list):
+        return [[str(values) if values is not None else ""]]
+    
+    # Handle single row case
+    if not isinstance(values[0], list):
+        return [[str(v) if v is not None else "" for v in values]]
+    
+    # Handle multi-row case
+    return [[str(cell) if cell is not None else "" for cell in row] for row in values]
+
+
+@mcp.tool()
+def write_cell(sheet_name: str, cell_address: str, value: str) -> str:
+    """Write a value to a single cell in Excel.
+    
+    Args:
+        sheet_name: Name of the sheet
+        cell_address: Cell address like 'A1', 'B5', etc.
+        value: Value to write to the cell
+    """
+    app = xw.apps.active
+    wb = app.books.active
+    sheet = wb.sheets[sheet_name]
+    sheet.range(cell_address).value = value
+    return f"Written '{value}' to {sheet_name}!{cell_address}"
+
+
+@mcp.tool()
+def read_range_table(sheet_name: str, range_address: str, headers: bool = True, show_row_numbers: bool = False, show_col_addresses: bool = False, tablefmt: str = "plain") -> str:
+    """Read a range of cells from Excel and format as a table.
+    
+    Args:
+        sheet_name: Name of the sheet
+        range_address: Range address like 'A1:C10', 'B2:D20', etc.
+        headers: Whether first row contains headers
+        show_row_numbers: Add row numbers as first column
+        show_col_addresses: Use Excel column addresses (A, B, C) as headers
+        tablefmt: Table format (simple, plain, grid, pipe, etc.)
+    """
+    app = xw.apps.active
+    wb = app.books.active
+    sheet = wb.sheets[sheet_name]
+    values = sheet.range(range_address).value
+    
+    # Parse range to get start position
+    start_cell = range_address.split(':')[0]
+    col_letters = ''.join(c for c in start_cell if c.isalpha())
+    row_num = int(''.join(c for c in start_cell if c.isdigit()))
+    
+    # Handle single cell case
+    if not isinstance(values, list):
+        return str(values) if values is not None else ""
+    
+    # Handle single row case
+    if not isinstance(values[0], list):
+        values = [values]
+    
+    # Convert None values to empty strings
+    clean_values = [[str(cell) if cell is not None else "" for cell in row] for row in values]
+    
+    # Add row numbers if requested
+    if show_row_numbers:
+        for i, row in enumerate(clean_values):
+            row.insert(0, str(row_num + i))
+    
+    # Generate column headers if requested
+    if show_col_addresses:
+        start_col = ord(col_letters[0]) - ord('A')
+        col_headers = []
+        if show_row_numbers:
+            col_headers.append('Row')
+        for i in range(len(clean_values[0]) - (1 if show_row_numbers else 0)):
+            col_headers.append(chr(ord('A') + start_col + i))
+        
+        if headers and clean_values:
+            return tabulate(clean_values[1:], headers=col_headers, tablefmt=tablefmt)
+        else:
+            return tabulate(clean_values, headers=col_headers, tablefmt=tablefmt)
+    
+    elif headers and clean_values:
+        if show_row_numbers:
+            # Adjust headers to include row number column
+            row_headers = ['Row'] + clean_values[0][1:]
+            return tabulate(clean_values[1:], headers=row_headers, tablefmt=tablefmt)
+        else:
+            return tabulate(clean_values[1:], headers=clean_values[0], tablefmt=tablefmt)
+    else:
+        return tabulate(clean_values, tablefmt=tablefmt)
+
+
+@mcp.tool()
+def write_range(sheet_name: str, start_cell: str, values: list[list[str]]) -> str:
+    """Write values to a range of cells in Excel.
+    
+    Args:
+        sheet_name: Name of the sheet
+        start_cell: Starting cell address like 'A1', 'B5', etc.
+        values: 2D list of values to write
+    """
+    app = xw.apps.active
+    wb = app.books.active
+    sheet = wb.sheets[sheet_name]
+    sheet.range(start_cell).value = values
+    rows = len(values)
+    cols = len(values[0]) if values else 0
+    return f"Written {rows}x{cols} range starting at {sheet_name}!{start_cell}"
+
+
+if __name__ == "__main__":
+    mcp.run()
