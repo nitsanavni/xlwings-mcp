@@ -388,13 +388,25 @@ def list_open_workbooks() -> list[str]:
 
 
 @mcp.tool()
-def save_active_workbook() -> str:
-    """Save the currently active Excel workbook."""
+def save_workbook(filename: str | None = None) -> str:
+    """Save a workbook.
+
+    Args:
+        filename: Name of the workbook to save. If None, saves the active workbook.
+    """
     try:
         app = xw.apps.active
-        wb = app.books.active
-        wb.save()
-        return f"Saved workbook: {wb.name}"
+        if filename is None:
+            wb = app.books.active
+            wb.save()
+            return f"Saved active workbook: {wb.name}"
+        else:
+            # Find the workbook by name
+            for wb in app.books:
+                if wb.name == filename:
+                    wb.save()
+                    return f"Saved workbook: {wb.name}"
+            return f"Error: Workbook '{filename}' not found"
     except Exception as e:
         return f"Error saving workbook: {e}"
 
