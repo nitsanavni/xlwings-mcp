@@ -16,7 +16,7 @@ def get_sheet_names() -> list[str]:
 
 
 @mcp.tool()
-def read_table(
+def read(
     sheet_name: str,
     cell_address: str,
     is_expanded_range: bool = False,
@@ -79,32 +79,7 @@ def read_table(
 
 
 @mcp.tool()
-def write_cell(
-    sheet_name: str, cell_address: str, value: str, save_on_min_cells_written: int = 0
-) -> str:
-    """Write a value to a single cell in Excel.
-
-    Args:
-        sheet_name: Name of the sheet
-        cell_address: Cell address like 'A1', 'B5', etc.
-        value: Value to write to the cell
-        save_on_min_cells_written: If > 0, save the workbook if at least this many cells were written
-    """
-    app = xw.apps.active
-    wb = app.books.active
-    sheet = wb.sheets[sheet_name]
-    sheet.range(cell_address).value = value
-
-    # Save if requested and we wrote at least the minimum cells (1 cell in this case)
-    if save_on_min_cells_written > 0 and save_on_min_cells_written <= 1:
-        wb.save()
-        return f"Written '{value}' to {sheet_name}!{cell_address} and saved workbook"
-
-    return f"Written '{value}' to {sheet_name}!{cell_address}"
-
-
-@mcp.tool()
-def write_range(
+def write(
     sheet_name: str,
     start_cell: str,
     values: list[list[str]],
@@ -142,7 +117,7 @@ def write_range(
 
 
 @mcp.tool()
-def open_excel_file(file_path: str, create_if_not_exists: bool = True) -> str:
+def open_workbook(file_path: str, create_if_not_exists: bool = True) -> str:
     """Open an Excel file in a new workbook.
 
     Args:
@@ -169,14 +144,26 @@ def open_excel_file(file_path: str, create_if_not_exists: bool = True) -> str:
 
 
 @mcp.tool()
-def close_active_workbook() -> str:
-    """Close the currently active Excel workbook."""
+def close_workbook(filename: str | None = None) -> str:
+    """Close an Excel workbook.
+
+    Args:
+        filename: Name of the workbook to close. If None, closes the active workbook.
+    """
     try:
         app = xw.apps.active
-        wb = app.books.active
-        wb_name = wb.name
-        wb.close()
-        return f"Closed workbook: {wb_name}"
+        if filename is None:
+            wb = app.books.active
+            wb_name = wb.name
+            wb.close()
+            return f"Closed active workbook: {wb_name}"
+        else:
+            for wb in app.books:
+                if wb.name == filename:
+                    wb_name = wb.name
+                    wb.close()
+                    return f"Closed workbook: {wb_name}"
+            return f"Error: Workbook '{filename}' not found"
     except Exception as e:
         return f"Error closing workbook: {e}"
 
