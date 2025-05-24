@@ -1,5 +1,5 @@
-- publish on pypi w uv
-- test
+- publish on pypi w uv (package built and tested locally - still need to publish)
+- test (need automated testing - unit tests, integration tests)
 - CI
 - README.md
 - high level editing - cut, paste, move, delete, insert rows/columns
