@@ -95,39 +95,6 @@ wheels = [
 ]
 
 [[package]]
-name = "excel-mcp"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "mcp", extra = ["cli"] },
-    { name = "tabulate" },
-    { name = "xlwings" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-tabulate" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mcp", extras = ["cli"], specifier = ">=1.9.1" },
-    { name = "tabulate", specifier = ">=0.9.0" },
-    { name = "xlwings", specifier = ">=0.33.15" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "mypy", specifier = ">=1.15.0" },
-    { name = "ruff", specifier = ">=0.11.11" },
-    { name = "types-tabulate", specifier = ">=0.9.0.20241207" },
-]
-
-[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -599,4 +566,37 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/43/8a/78275c61601b682ec69db0ec7c05e1b1043da729017c5a1ac2769787df81/xlwings-0.33.15-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:390b9753040a44db35eb473cf818ae57145c49a9e7e5cb02c9fd750bdf3da583", size = 1637256, upload-time = "2025-05-21T08:51:21.447Z" },
     { url = "https://files.pythonhosted.org/packages/76/43/ed764fab5455676138578d6905c59674acf7f45eed3d451e8faf48c7c4b5/xlwings-0.33.15-cp313-cp313-win_amd64.whl", hash = "sha256:75b0dba6fea351421be00afcb00e218d7370c3e62c92c8207db2ca95500f5589", size = 1630573, upload-time = "2025-05-21T08:51:22.571Z" },
     { url = "https://files.pythonhosted.org/packages/db/5f/7a1cbfe8ff468efdcb6222ebb46ec606a209740b6d680f78ca2fa2114909/xlwings-0.33.15-py3-none-any.whl", hash = "sha256:84f1bf30bbb3f28dfab7140667cd1575efa016969a8a37e56a0cd7d77ee152e4", size = 732584, upload-time = "2025-05-21T08:51:36.018Z" },
+]
+
+[[package]]
+name = "xlwings-mcp"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "mcp", extra = ["cli"] },
+    { name = "tabulate" },
+    { name = "xlwings" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "black" },
+    { name = "mypy" },
+    { name = "ruff" },
+    { name = "types-tabulate" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mcp", extras = ["cli"], specifier = ">=1.9.1" },
+    { name = "tabulate", specifier = ">=0.9.0" },
+    { name = "xlwings", specifier = ">=0.33.15" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = ">=25.1.0" },
+    { name = "mypy", specifier = ">=1.15.0" },
+    { name = "ruff", specifier = ">=0.11.11" },
+    { name = "types-tabulate", specifier = ">=0.9.0.20241207" },
 ]
