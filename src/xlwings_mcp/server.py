@@ -202,6 +202,39 @@ def save_workbook(filename: str | None = None) -> str:
         return f"Error saving workbook: {e}"
 
 
+@mcp.tool()
+def get_workbook_names(filename: str | None = None) -> str:
+    """Get all defined names from a workbook with their references.
+
+    Args:
+        filename: Name of the workbook to get names from. If None, uses the active workbook.
+    """
+    try:
+        app = xw.apps.active
+        if filename is None:
+            wb = app.books.active
+        else:
+            # Find the workbook by name
+            wb = None
+            for book in app.books:
+                if book.name == filename:
+                    wb = book
+                    break
+            if wb is None:
+                return f"Error: Workbook '{filename}' not found"
+
+        names_info = []
+        for name in wb.names:
+            names_info.append([name.name, name.refers_to])
+
+        if not names_info:
+            return "No named ranges found in workbook"
+
+        return tabulate(names_info, headers=["Name", "Refers To"], tablefmt="plain")
+    except Exception as e:
+        return f"Error getting workbook names: {e}"
+
+
 def main() -> None:
     """Entry point for the xlwings-mcp CLI."""
     mcp.run()
