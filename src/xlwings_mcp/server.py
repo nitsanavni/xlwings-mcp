@@ -244,12 +244,23 @@ def get_workbook_names(filename: str | None = None) -> str:
 
 
 @mcp.tool()
-def search(pattern: str, filename: str | None = None) -> str:
+def search(
+    pattern: str,
+    filename: str | None = None,
+    search_sheets: bool = True,
+    search_names: bool = True,
+    search_values: bool = True,
+    search_formulas: bool = True,
+) -> str:
     """Search for a regex pattern in sheet names, defined names, cell values, and formulas.
 
     Args:
         pattern: Regular expression pattern to search for
         filename: Name of the workbook to search. If None, uses the active workbook.
+        search_sheets: If True, search in sheet names
+        search_names: If True, search in defined names
+        search_values: If True, search in cell values
+        search_formulas: If True, search in cell formulas
     """
     try:
         app = xw.apps.active
@@ -269,64 +280,76 @@ def search(pattern: str, filename: str | None = None) -> str:
         results = []
 
         # Search sheet names
-        for sheet in wb.sheets:
-            if regex.search(sheet.name):
-                results.append(["Sheet Name", sheet.name, "", ""])
+        if search_sheets:
+            for sheet in wb.sheets:
+                if regex.search(sheet.name):
+                    results.append(["Sheet Name", sheet.name, "", ""])
 
         # Search defined names
-        for name in wb.names:
-            if regex.search(name.name) or regex.search(name.refers_to):
-                results.append(["Named Range", name.name, name.refers_to, ""])
+        if search_names:
+            for name in wb.names:
+                if regex.search(name.name) or regex.search(name.refers_to):
+                    results.append(["Named Range", name.name, name.refers_to, ""])
 
         # Search cell values and formulas
-        for sheet in wb.sheets:
-            used_range = sheet.used_range
-            if used_range is None:
-                continue
+        if search_values or search_formulas:
+            for sheet in wb.sheets:
+                used_range = sheet.used_range
+                if used_range is None:
+                    continue
 
-            values = used_range.value
-            formulas = used_range.formula
+                values = used_range.value
+                formulas = used_range.formula
 
-            # Handle single cell case
-            if not isinstance(values, list):
-                values = [[values]]
-                formulas = [[formulas]]
-            elif values and not isinstance(values[0], list):
-                values = [values]
-                formulas = [formulas]
+                # Handle single cell case
+                if not isinstance(values, list):
+                    values = [[values]]
+                    formulas = [[formulas]]
+                elif values and not isinstance(values[0], list):
+                    values = [values]
+                    formulas = [formulas]
 
-            start_row = used_range.row
-            start_col = used_range.column
+                start_row = used_range.row
+                start_col = used_range.column
 
-            for row_idx, (value_row, formula_row) in enumerate(zip(values, formulas)):
-                for col_idx, (value, formula) in enumerate(zip(value_row, formula_row)):
-                    cell_address = f"{chr(ord('A') + start_col - 1 + col_idx)}{start_row + row_idx}"
-
-                    # Search in cell value
-                    if value is not None and regex.search(str(value)):
-                        results.append(
-                            [
-                                "Cell Value",
-                                f"{sheet.name}!{cell_address}",
-                                str(value),
-                                "",
-                            ]
-                        )
-
-                    # Search in formula (if different from value)
-                    if (
-                        formula is not None
-                        and formula != value
-                        and regex.search(str(formula))
+                for row_idx, (value_row, formula_row) in enumerate(
+                    zip(values, formulas)
+                ):
+                    for col_idx, (value, formula) in enumerate(
+                        zip(value_row, formula_row)
                     ):
-                        results.append(
-                            [
-                                "Formula",
-                                f"{sheet.name}!{cell_address}",
-                                str(formula),
-                                "",
-                            ]
-                        )
+                        cell_address = f"{chr(ord('A') + start_col - 1 + col_idx)}{start_row + row_idx}"
+
+                        # Search in cell value
+                        if (
+                            search_values
+                            and value is not None
+                            and regex.search(str(value))
+                        ):
+                            results.append(
+                                [
+                                    "Cell Value",
+                                    f"{sheet.name}!{cell_address}",
+                                    str(value),
+                                    "",
+                                ]
+                            )
+
+                        # Search in formula (if different from value)
+                        if (
+                            search_formulas
+                            and formula is not None
+                            and formula != value
+                            and regex.search(str(formula))
+                        ):
+                            results.append(
+                                [
+                                    "Formula",
+                                    f"{sheet.name}!{cell_address}",
+                                    str(formula),
+                                    "",
+                                ]
+                            )
 
         if not results:
             return f"No matches found for pattern: {pattern}"
