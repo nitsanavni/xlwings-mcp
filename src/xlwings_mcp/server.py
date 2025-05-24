@@ -282,36 +282,35 @@ def search(
         results = []
         sheet_count = 0
         names_count = 0
+        sheet_total = 0
+        names_total = 0
 
         # Search sheet names
         if search_sheets:
             for sheet in wb.sheets:
-                if sheet_count >= limit:
-                    break
                 if regex.search(sheet.name):
-                    results.append(["Sheet Name", sheet.name, "", ""])
-                    sheet_count += 1
+                    sheet_total += 1
+                    if sheet_count < limit:
+                        results.append(["Sheet Name", sheet.name, "", ""])
+                        sheet_count += 1
 
         # Search defined names
         if search_names:
             for name in wb.names:
-                if names_count >= limit:
-                    break
                 if regex.search(name.name) or regex.search(name.refers_to):
-                    results.append(["Named Range", name.name, name.refers_to, ""])
-                    names_count += 1
+                    names_total += 1
+                    if names_count < limit:
+                        results.append(["Named Range", name.name, name.refers_to, ""])
+                        names_count += 1
 
         # Search cell values and formulas
         if search_values or search_formulas:
             values_count = 0
             formulas_count = 0
+            values_total = 0
+            formulas_total = 0
 
             for sheet in wb.sheets:
-                if (search_values and values_count >= limit) and (
-                    search_formulas and formulas_count >= limit
-                ):
-                    break
-
                 used_range = sheet.used_range
                 if used_range is None:
                     continue
@@ -333,62 +332,78 @@ def search(
                 for row_idx, (value_row, formula_row) in enumerate(
                     zip(values, formulas)
                 ):
-                    if (search_values and values_count >= limit) and (
-                        search_formulas and formulas_count >= limit
-                    ):
-                        break
-
                     for col_idx, (value, formula) in enumerate(
                         zip(value_row, formula_row)
                     ):
-                        if (search_values and values_count >= limit) and (
-                            search_formulas and formulas_count >= limit
-                        ):
-                            break
-
                         cell_address = f"{chr(ord('A') + start_col - 1 + col_idx)}{start_row + row_idx}"
 
                         # Search in cell value
                         if (
                             search_values
-                            and values_count < limit
                             and value is not None
                             and regex.search(str(value))
                         ):
-                            results.append(
-                                [
-                                    "Cell Value",
-                                    f"{sheet.name}!{cell_address}",
-                                    str(value),
-                                    "",
-                                ]
-                            )
-                            values_count += 1
+                            values_total += 1
+                            if values_count < limit:
+                                results.append(
+                                    [
+                                        "Cell Value",
+                                        f"{sheet.name}!{cell_address}",
+                                        str(value),
+                                        "",
+                                    ]
+                                )
+                                values_count += 1
 
                         # Search in formula (if different from value)
                         if (
                             search_formulas
-                            and formulas_count < limit
                             and formula is not None
                             and formula != value
                             and regex.search(str(formula))
                         ):
-                            results.append(
-                                [
-                                    "Formula",
-                                    f"{sheet.name}!{cell_address}",
-                                    str(formula),
-                                    "",
-                                ]
-                            )
-                            formulas_count += 1
+                            formulas_total += 1
+                            if formulas_count < limit:
+                                results.append(
+                                    [
+                                        "Formula",
+                                        f"{sheet.name}!{cell_address}",
+                                        str(formula),
+                                        "",
+                                    ]
+                                )
+                                formulas_count += 1
 
         if not results:
             return f"No matches found for pattern: {pattern}"
 
-        return tabulate(
+        # Build summary of truncated results
+        truncation_info = []
+        if search_sheets and sheet_total > limit:
+            truncation_info.append(
+                f"Sheet Names: showing {sheet_count} of {sheet_total}"
+            )
+        if search_names and names_total > limit:
+            truncation_info.append(
+                f"Named Ranges: showing {names_count} of {names_total}"
+            )
+        if search_values and values_total > limit:
+            truncation_info.append(
+                f"Cell Values: showing {values_count} of {values_total}"
+            )
+        if search_formulas and formulas_total > limit:
+            truncation_info.append(
+                f"Formulas: showing {formulas_count} of {formulas_total}"
+            )
+
+        result_table = tabulate(
             results, headers=["Type", "Location", "Content", ""], tablefmt="plain"
         )
+
+        if truncation_info:
+            return result_table + "\n\nResults limited:\n" + "\n".join(truncation_info)
+        else:
+            return result_table
     except Exception as e:
         return f"Error searching: {e}"
 
