@@ -2,6 +2,7 @@ from mcp.server.fastmcp import FastMCP
 import xlwings as xw  # type: ignore
 from tabulate import tabulate
 from pathlib import Path
+import re
 
 # Create an MCP server
 mcp = FastMCP("Excel API")
@@ -240,6 +241,101 @@ def get_workbook_names(filename: str | None = None) -> str:
         return tabulate(names_info, headers=["Name", "Refers To"], tablefmt="plain")
     except Exception as e:
         return f"Error getting workbook names: {e}"
+
+
+@mcp.tool()
+def search(pattern: str, filename: str | None = None) -> str:
+    """Search for a regex pattern in sheet names, defined names, cell values, and formulas.
+
+    Args:
+        pattern: Regular expression pattern to search for
+        filename: Name of the workbook to search. If None, uses the active workbook.
+    """
+    try:
+        app = xw.apps.active
+        if filename is None:
+            wb = app.books.active
+        else:
+            # Find the workbook by name
+            wb = None
+            for book in app.books:
+                if book.name == filename:
+                    wb = book
+                    break
+            if wb is None:
+                return f"Error: Workbook '{filename}' not found"
+
+        regex = re.compile(pattern, re.IGNORECASE)
+        results = []
+
+        # Search sheet names
+        for sheet in wb.sheets:
+            if regex.search(sheet.name):
+                results.append(["Sheet Name", sheet.name, "", ""])
+
+        # Search defined names
+        for name in wb.names:
+            if regex.search(name.name) or regex.search(name.refers_to):
+                results.append(["Named Range", name.name, name.refers_to, ""])
+
+        # Search cell values and formulas
+        for sheet in wb.sheets:
+            used_range = sheet.used_range
+            if used_range is None:
+                continue
+
+            values = used_range.value
+            formulas = used_range.formula
+
+            # Handle single cell case
+            if not isinstance(values, list):
+                values = [[values]]
+                formulas = [[formulas]]
+            elif values and not isinstance(values[0], list):
+                values = [values]
+                formulas = [formulas]
+
+            start_row = used_range.row
+            start_col = used_range.column
+
+            for row_idx, (value_row, formula_row) in enumerate(zip(values, formulas)):
+                for col_idx, (value, formula) in enumerate(zip(value_row, formula_row)):
+                    cell_address = f"{chr(ord('A') + start_col - 1 + col_idx)}{start_row + row_idx}"
+
+                    # Search in cell value
+                    if value is not None and regex.search(str(value)):
+                        results.append(
+                            [
+                                "Cell Value",
+                                f"{sheet.name}!{cell_address}",
+                                str(value),
+                                "",
+                            ]
+                        )
+
+                    # Search in formula (if different from value)
+                    if (
+                        formula is not None
+                        and formula != value
+                        and regex.search(str(formula))
+                    ):
+                        results.append(
+                            [
+                                "Formula",
+                                f"{sheet.name}!{cell_address}",
+                                str(formula),
+                                "",
+                            ]
+                        )
+
+        if not results:
+            return f"No matches found for pattern: {pattern}"
+
+        return tabulate(
+            results, headers=["Type", "Location", "Content", ""], tablefmt="plain"
+        )
+    except Exception as e:
+        return f"Error searching: {e}"
 
 
 def main() -> None:
