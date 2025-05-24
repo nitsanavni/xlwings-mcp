@@ -7,7 +7,7 @@
         "--directory",
         "/Users/nitsanavni/code/excel-mcp/",
         "run",
-        "main.py"
+        "xlwings-mcp"
       ],
       "env": {}
     }
