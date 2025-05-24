@@ -215,38 +215,5 @@ def save_workbook(filename: str | None = None) -> str:
         return f"Error saving workbook: {e}"
 
 
-@mcp.tool()
-def find_excel_files_in_downloads() -> list[str]:
-    """Find all Excel files in the Downloads folder, sorted by modification time."""
-    downloads_path = Path.home() / "Downloads"
-    excel_files = list(downloads_path.glob("**/*.xlsx"))
-
-    if not excel_files:
-        return ["No Excel files found in Downloads folder"]
-
-    # Sort by modification time, most recent first
-    sorted_files = sorted(excel_files, key=lambda x: x.stat().st_mtime, reverse=True)
-    return [str(file_path) for file_path in sorted_files[:20]]  # Return top 20
-
-
-@mcp.tool()
-def open_recent_excel_file() -> str:
-    """Open the most recently modified Excel file from Downloads folder."""
-    downloads_path = Path.home() / "Downloads"
-    excel_files = list(downloads_path.glob("**/*.xlsx"))
-
-    if not excel_files:
-        return "No Excel files found in Downloads folder"
-
-    # Sort by modification time, most recent first
-    most_recent = max(excel_files, key=lambda x: x.stat().st_mtime)
-
-    try:
-        wb = xw.Book(str(most_recent))
-        return f"Opened most recent file: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
-    except Exception as e:
-        return f"Error opening file: {e}"
-
-
 if __name__ == "__main__":
     mcp.run()
