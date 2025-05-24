@@ -79,18 +79,27 @@ def read_table(
 
 
 @mcp.tool()
-def write_cell(sheet_name: str, cell_address: str, value: str) -> str:
+def write_cell(
+    sheet_name: str, cell_address: str, value: str, save_on_min_cells_written: int = 0
+) -> str:
     """Write a value to a single cell in Excel.
 
     Args:
         sheet_name: Name of the sheet
         cell_address: Cell address like 'A1', 'B5', etc.
         value: Value to write to the cell
+        save_on_min_cells_written: If > 0, save the workbook if at least this many cells were written
     """
     app = xw.apps.active
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
     sheet.range(cell_address).value = value
+
+    # Save if requested and we wrote at least the minimum cells (1 cell in this case)
+    if save_on_min_cells_written > 0 and save_on_min_cells_written <= 1:
+        wb.save()
+        return f"Written '{value}' to {sheet_name}!{cell_address} and saved workbook"
+
     return f"Written '{value}' to {sheet_name}!{cell_address}"
 
 
@@ -100,6 +109,7 @@ def write_range(
     start_cell: str,
     values: list[list[str]],
     is_expanded_range: bool = False,
+    save_on_min_cells_written: int = 0,
 ) -> str:
     """Write values to a range of cells in Excel.
 
@@ -108,6 +118,7 @@ def write_range(
         start_cell: Starting cell address like 'A1', 'B5', etc.
         values: 2D list of values to write
         is_expanded_range: If True, clear the expanded range before writing
+        save_on_min_cells_written: If > 0, save the workbook if at least this many cells were written
     """
     app = xw.apps.active
     wb = app.books.active
@@ -120,6 +131,13 @@ def write_range(
     sheet.range(start_cell).value = values
     rows = len(values)
     cols = len(values[0]) if values else 0
+    cells_written = rows * cols
+
+    # Save if requested and we wrote at least the minimum cells
+    if save_on_min_cells_written > 0 and cells_written >= save_on_min_cells_written:
+        wb.save()
+        return f"Written {rows}x{cols} range starting at {sheet_name}!{start_cell} and saved workbook"
+
     return f"Written {rows}x{cols} range starting at {sheet_name}!{start_cell}"
 
 
