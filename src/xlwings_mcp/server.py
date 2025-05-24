@@ -251,6 +251,7 @@ def search(
     search_names: bool = True,
     search_values: bool = True,
     search_formulas: bool = True,
+    limit: int = 4,
 ) -> str:
     """Search for a regex pattern in sheet names, defined names, cell values, and formulas.
 
@@ -261,6 +262,7 @@ def search(
         search_names: If True, search in defined names
         search_values: If True, search in cell values
         search_formulas: If True, search in cell formulas
+        limit: Number of results to return per type (default 4)
     """
     try:
         app = xw.apps.active
@@ -278,22 +280,38 @@ def search(
 
         regex = re.compile(pattern, re.IGNORECASE)
         results = []
+        sheet_count = 0
+        names_count = 0
 
         # Search sheet names
         if search_sheets:
             for sheet in wb.sheets:
+                if sheet_count >= limit:
+                    break
                 if regex.search(sheet.name):
                     results.append(["Sheet Name", sheet.name, "", ""])
+                    sheet_count += 1
 
         # Search defined names
         if search_names:
             for name in wb.names:
+                if names_count >= limit:
+                    break
                 if regex.search(name.name) or regex.search(name.refers_to):
                     results.append(["Named Range", name.name, name.refers_to, ""])
+                    names_count += 1
 
         # Search cell values and formulas
         if search_values or search_formulas:
+            values_count = 0
+            formulas_count = 0
+
             for sheet in wb.sheets:
+                if (search_values and values_count >= limit) and (
+                    search_formulas and formulas_count >= limit
+                ):
+                    break
+
                 used_range = sheet.used_range
                 if used_range is None:
                     continue
@@ -315,14 +333,25 @@ def search(
                 for row_idx, (value_row, formula_row) in enumerate(
                     zip(values, formulas)
                 ):
+                    if (search_values and values_count >= limit) and (
+                        search_formulas and formulas_count >= limit
+                    ):
+                        break
+
                     for col_idx, (value, formula) in enumerate(
                         zip(value_row, formula_row)
                     ):
+                        if (search_values and values_count >= limit) and (
+                            search_formulas and formulas_count >= limit
+                        ):
+                            break
+
                         cell_address = f"{chr(ord('A') + start_col - 1 + col_idx)}{start_row + row_idx}"
 
                         # Search in cell value
                         if (
                             search_values
+                            and values_count < limit
                             and value is not None
                             and regex.search(str(value))
                         ):
@@ -334,10 +363,12 @@ def search(
                                     "",
                                 ]
                             )
+                            values_count += 1
 
                         # Search in formula (if different from value)
                         if (
                             search_formulas
+                            and formulas_count < limit
                             and formula is not None
                             and formula != value
                             and regex.search(str(formula))
@@ -350,6 +381,7 @@ def search(
                                     "",
                                 ]
                             )
+                            formulas_count += 1
 
         if not results:
             return f"No matches found for pattern: {pattern}"
