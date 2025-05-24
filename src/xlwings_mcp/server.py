@@ -127,6 +127,13 @@ def open_workbook(file_path: str, create_if_not_exists: bool = True) -> str:
     try:
         path = Path(file_path)
 
+        # Check if the file is already open and activate it
+        app = xw.apps.active
+        for wb in app.books:
+            if Path(wb.fullname).resolve() == path.resolve():
+                wb.activate()
+                return f"Activated already open workbook: {wb.name} with sheets: {[sheet.name for sheet in wb.sheets]}"
+
         if not path.exists() and create_if_not_exists:
             # Create a new workbook and save it
             # Ensure the directory exists
