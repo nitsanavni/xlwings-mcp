@@ -95,17 +95,28 @@ def write_cell(sheet_name: str, cell_address: str, value: str) -> str:
 
 
 @mcp.tool()
-def write_range(sheet_name: str, start_cell: str, values: list[list[str]]) -> str:
+def write_range(
+    sheet_name: str,
+    start_cell: str,
+    values: list[list[str]],
+    is_expanded_range: bool = False,
+) -> str:
     """Write values to a range of cells in Excel.
 
     Args:
         sheet_name: Name of the sheet
         start_cell: Starting cell address like 'A1', 'B5', etc.
         values: 2D list of values to write
+        is_expanded_range: If True, clear the expanded range before writing
     """
     app = xw.apps.active
     wb = app.books.active
     sheet = wb.sheets[sheet_name]
+
+    if is_expanded_range:
+        # Clear the expanded range first
+        sheet.range(start_cell).expand().clear_contents()
+
     sheet.range(start_cell).value = values
     rows = len(values)
     cols = len(values[0]) if values else 0
