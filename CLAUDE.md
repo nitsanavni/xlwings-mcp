@@ -18,3 +18,18 @@ uv pip install -r <(uv pip compile pyproject.toml)
 ```
 
 Then select the `.venv/bin/python` interpreter in VS Code to resolve import warnings.
+
+# Shared Terminal with Claude via Tmux
+
+Scripts for shared terminal workflow:
+
+```bash
+# Create session
+./tmux-create-session.sh
+
+# Human: attach to session
+tmux attach-session -t excel-mcp
+
+# Claude: send command and read result
+./tmux-send-read.sh 'command'
+```
