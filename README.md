@@ -24,7 +24,7 @@ Add to your Claude Desktop configuration:
 ```json
 {
   "mcpServers": {
-    "xlwings-mcp": {
+    "xlwings": {
       "type": "stdio",
       "command": "uvx",
       "args": ["xlwings-mcp"],
