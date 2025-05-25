@@ -29,3 +29,14 @@ tmux attach-session -t excel-mcp
 # Claude: send command and read result
 ./tmux-send-read.sh 'command'
 ```
+
+# Publishing to PyPI
+
+To publish a new version to PyPI:
+
+1. Bump version in `pyproject.toml`
+2. Clean and rebuild: `rm -rf dist/ && uv build`
+3. Publish: `export UV_PUBLISH_TOKEN="$(pbpaste)" && uv publish`
+4. Commit version bump and push
+
+Note: Ensure PyPI token is in clipboard before publishing.
