@@ -19,7 +19,7 @@ pip install xlwings-mcp
 
 ### As MCP Server
 
-Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`):
+Add to your Claude Desktop configuration:
 
 ```json
 {
