@@ -6,3 +6,15 @@ prefer `uv run` over running python directly
 # Notes
 
 - list_open_workbooks returns only filenames - consider if we need absolute paths for better workbook identification
+
+# VS Code Python Environment Setup
+
+To sync VS Code with uv dependencies:
+
+```bash
+uv venv .venv
+. .venv/bin/activate
+uv pip install -r <(uv pip compile pyproject.toml)
+```
+
+Then select the `.venv/bin/python` interpreter in VS Code to resolve import warnings.
