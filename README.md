@@ -17,6 +17,25 @@ pip install xlwings-mcp
 
 ## Usage
 
+### As MCP Server
+
+Add to your Claude Desktop configuration (`~/.claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "xlwings-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["xlwings-mcp"],
+      "env": {}
+    }
+  }
+}
+```
+
+### Direct Usage
+
 Run the MCP server:
 
 ```bash
