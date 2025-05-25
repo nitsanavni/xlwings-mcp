@@ -10,6 +10,12 @@
         "xlwings-mcp"
       ],
       "env": {}
+    },
+    "xlwings-on-pypi": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["xlwings-mcp"],
+      "env": {}
     }
   }
 }

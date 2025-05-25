@@ -181,7 +181,7 @@ def list_open_workbooks() -> list[str]:
     """List all currently open Excel workbooks."""
     try:
         app = xw.apps.active
-        return [wb.name for wb in app.books]
+        return [wb.fullname for wb in app.books]
     except Exception as e:
         return [f"Error listing workbooks: {e}"]
 
